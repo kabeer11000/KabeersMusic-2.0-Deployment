@@ -9,8 +9,8 @@ const app = express();
 
 
 const limiter = rateLimit({
-    windowMs: 100 * 60 * 1000, // 10 minutes 20 request
-    max: 1000 // limit each IP to 100 requests per windowMs TODO Default 10
+    windowMs: 1 * 60 * 1000, // 10 minutes 20 request
+    max: 100 // limit each IP to 100 requests per windowMs TODO Default 10
 });
 
 //  apply to all requests
@@ -52,7 +52,7 @@ app.get('/proxy/:proxyUrl*', (req, res) => {
     req.url = req.url.replace('/proxy/', '/'); // Strip '/proxy' from the front of the URL, else the proxy won't work.
     proxy.emit('request', req, res);
 });
-app.get('/views/component/home', (req, res) => {
+app.get('/views/component/Home', (req, res) => {
     return res.send(null);
 });
 
@@ -65,7 +65,6 @@ let proxy = cors_proxy.createServer({
     requireHeaders: [], // Do not require any headers.
     removeHeaders: [] // Do not remove any headers.
 });
-
 
 app.listen(port, () => console.log(`Server is listening on port ${port}.`));
 module.exports = app;
