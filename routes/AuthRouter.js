@@ -30,7 +30,7 @@ router.get('/callback', function (req, res, next) {
         url: 'https://kabeers-auth.herokuapp.com/auth/token',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
-        },
+        },//https://kabeersmusic.herokuapp.com/auth/callback
         data: serialize({
             client_secret: 'pojsd682jxp31accE3mHsMtBRGVtIk0AmTV0jU3g',
             client_public: 'S565ds6887df646k5Y4f56IOiDWxRXS840lnnmD',
@@ -59,7 +59,7 @@ router.get('/redirect', (req, res) => {
     const info = {
         clientId: 'S565ds6887df646k5Y4f56IOiDWxRXS840lnnmD',
         scopes: ['s564d68a34dCn9OuUNTZRfuaCnwc6:feed', 's564d68a34dCn9OuUNTZRfuaCnwc6:history.readwrite'].join('|'),
-        callback: encodeURI(endPoints.callbackURL)
+        callback: encodeURI(endPoints.callbackURLFAKE)
     };
     const id = makeid(10);
     req.session.state = id;
