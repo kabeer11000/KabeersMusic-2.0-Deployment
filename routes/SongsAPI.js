@@ -9,7 +9,8 @@ const ytdl = require("ytdl-core");
 const
 	mongo = require("mongodb"),
 	MongoClient = mongo.MongoClient;
-const mongo_uri = "mongodb://127.0.0.1:27017/?readPreference=primary&gssapiServiceName=mongodb&appname=MongoDB%20Compass%20Community&ssl=false";
+//const mongo_uri = "mongodb://127.0.0.1:27017/?readPreference=primary&gssapiServiceName=mongodb&appname=MongoDB%20Compass%20Community&ssl=false";
+const mongo_uri = require("../keys/mongokey");
 var franc = require("franc");
 let axios = require("axios");
 var jwt = require("jsonwebtoken");
@@ -88,7 +89,7 @@ router.get("/song", async (req, res) => {
 							yt_video_id: req.query.id,
 						}).catch(e => res.json(e.message)))
 						.catch(err => res.status(400).json("Video Not Found"));
-				});
+				}).catch(e => res.status(500).json('Database Connection Error'));
 		}
 	});
 });
@@ -115,7 +116,7 @@ router.get("/search", (req, res) => {
 						.then(v => res.status(200).json(v.data))
 						.catch(e => res.status(400).json(e));
 				});
-			});
+			}).catch(e => res.status(500).json('Database Connection Error'));
 	});
 });
 router.get("/feed55", async (req, res) => {

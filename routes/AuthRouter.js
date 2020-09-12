@@ -50,7 +50,7 @@ router.get('/callback', function (req, res, next) {
             res.redirect('/');
         })
         .catch(function (error) {
-            return res.status(access_token_expired_code).json(error);
+            return res.status(access_token_expired_code).json(error.message);
         });
 });
 
