@@ -33,6 +33,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
+
 app.use(session({
   secret: "5s323720194bccb1cb94164a13E144994E3E17F9B",
   resave: false,
