@@ -24,6 +24,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.0",
     "morgan": "~1.9.1",
+    "natural": "^2.1.5",
     "punycode": "^2.1.1",
     "simpleyt": "^1.0.5",
     "youtube-search-without-api-key": "^1.0.2",
@@ -33,7 +34,6 @@
     "ytsr": "^1.0.1"
   },
   "devDependencies": {
-    "natural": "^2.1.5",
     "nodemon": "^2.0.4"
   },
   "engines": {
