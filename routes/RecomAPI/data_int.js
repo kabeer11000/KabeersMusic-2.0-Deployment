@@ -1,4 +1,4 @@
-const punycode = require('punycode');
+const punycode = require("punycode");
 var data = [
 	{
 		input: [1, 2, 3, 3, 3, 3, 3, 5, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 4, 4, 5, 5, 5, 5, 5, 5, 5, 4, 5, 5, 2, 2, 2, 2, 6, 1, 5, 5, 5, 5],
@@ -25,8 +25,8 @@ var data = [
 		output: [5]
 	}
 ];
-var input = 'Kabeer_jaffri';
+var input = "Kabeer_jaffri";
 var encoded = punycode.ucs2.decode(input);
-console.log('Encoded', encoded);
-console.log('Decoded', punycode.ucs2.encode(encoded));
+console.log("Encoded", encoded);
+console.log("Decoded", punycode.ucs2.encode(encoded));
 module.exports = data;

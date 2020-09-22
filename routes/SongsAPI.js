@@ -19,7 +19,8 @@ var ytpl = require("ytpl");
 const simpleYT = require("simpleyt");
 const yt = require("youtube-search-without-api-key");
 const yts = require("yt-search");
-var natural = require('natural');
+var natural = require("natural");
+const {searchWeb} = require("../functions/meta-data");
 
 
 var tokenizer = new natural.WordTokenizer();
@@ -202,7 +203,7 @@ const getMaximum = (e) => {
 		for (let r = m; r < e.length; r++) e[m] === e[r] && l++, n < l && (n = l, t = e[m]);
 		l = 0;
 	}
-	return t && n ? {name: t, times: n} : {name: e[0], times:1 };
+	return t && n ? {name: t, times: n} : {name: e[0], times: 1};
 };
 router.get("/feed/search", (req, res) => {
 	if (!req.headers.authorization) return res.status(402).json("Bad Request");
@@ -252,15 +253,20 @@ router.get("/feed/topartist", (req, res) => {
 							keyWords: object.video_keywords
 						})).flat().filter((item, pos, self) => self.indexOf(item) === pos);
 						dbo.collection("history").find({
-							type: "watchHistory",
-							video_keywords: {
-								$elemMatch: {
-									$in: [...historyKeywords.map(video => video.keyWords)].flat() // Fatten Array
-								}
-							}
+							$and: [
+								{type: "watchHistory",},
+								{
+									video_keywords: {
+										$elemMatch: {
+											$in: [...historyKeywords.map(video => video.keyWords)].flat() // Fatten Array
+										}
+									},
+								},
+								{user_id: user_id}
+							]
 						}).sort({timeStamp: -1}).limit(10).toArray()
 							.then(recom => {
-								if (!recom.map(v => v.artist_name).length) return res.status(404).json({message:'Nothing Found'});
+								if (!recom.map(v => v.artist_name).length) return res.status(404).json({message: "Nothing Found"});
 								console.log(recom.map(v => v.artist_name));
 								const ListenedMaximum = getMaximum(recom.map(v => v.artist_name));
 								axios.get(endPoints.searchYoutube(`${ListenedMaximum.name} official music`).toLowerCase())
@@ -280,21 +286,48 @@ router.get("/feed/artists/all", (req, res) => {
 		if (err || !decoded) return res.status(400).json(err);
 		if (!decoded.grant_types.split("|").includes("s564d68a34dCn9OuUNTZRfuaCnwc6:feed")) return res.status(402).json("Invalid Token Scope");
 		const user_id = decoded.user_id;
-
 		MongoClient.connect(mongo_uri, {useNewUrlParser: true, useUnifiedTopology: true})
 			.then((db) => {
-				if (!db) return res.status(500).json("Error Connecting to Database");
-				const channelTitles = [];
-				db.db("music").collection("history")
-					.find({user_id: user_id, type: "watchHistory"}).toArray()
-					.then(value => value.map((v, i) => channelTitles.push({id: v.channelId, name: v.artist_name})))
-					.then(async () => {
-						res.status(200).json({
-							kind: "KabeersMusic#Artists",
-							items: channelTitles.filter((v, i, a) => a.findIndex(t => (t.id === v.id)) === i),
-						});
-					}).catch(e => res.status(500).json(e));
-			}).catch(e => res.status(500).json(e.message));
+				if (!db) return res.status(500).json("Internal Server Error");
+				const dbo = db.db("music");
+				dbo.collection("history")
+					.find({
+						user_id: user_id,
+						type: "watchHistory",
+					})
+					.sort({timeStamp: -1}).limit(10).toArray()
+					.then((results) => {
+						const historyKeywords = results.map((object, index) => ({
+							videoId: object.video_id,
+							keyWords: [...object.video_keywords]
+						})).flat().filter((item, pos, self) => self.indexOf(item) === pos);
+						dbo.collection("history").find({
+							$and: [
+								{
+									type: "watchHistory",
+								},
+								{
+									video_keywords: {
+										$elemMatch: {
+											$in: [...historyKeywords.map(video => video.keyWords)].flat() // Fatten Array
+										}
+									}
+								}
+							]
+						}).sort({timeStamp: -1}).limit(10).toArray()
+							.then(recom => {
+								if (!recom.map(v => v).length) return res.status(404).json({message: "Nothing Found"});
+								return historyKeywords.map(video => video.keyWords).flat();
+								res.status(200).json({
+									kind: "KabeersMusic#Artists",
+									items: [...recom.map(v => ({
+										id: v.channelId,
+										name: v.artist_name
+									})).filter((v, i, a) => a.findIndex(t => (t.id === v.id)) === i)],
+								});
+							});
+					});
+			});
 	});
 });
 router.post("/history/save", async (req, res) => {
@@ -308,24 +341,26 @@ router.post("/history/save", async (req, res) => {
 				if (!decoded.grant_types.split("|").includes("s564d68a34dCn9OuUNTZRfuaCnwc6:history.readwrite")) return res.status(402).json("Invalid Token Scope");
 
 				const user_id = decoded.user_id;
-				dbo.collection("history").insertOne({
-					type: "watchHistory",
-					time: req.body.time,
-					user_id: user_id,
-					video_id: req.body.video_id,
-					artist_name: req.body.artist_name,
-					tags: req.body.tags.split(","),
-					yt_catagory: req.body.yt_catagory,
-					video_title: req.body.video_title,
-					video_keywords: req.body.video_keywords.split(","),
-					language: franc(req.body.video_description, {}) || "en",
-					video_featuring_artists: req.body.video_featuring_artists.split(","),
-					video_description: req.body.video_description,
-					channelId: req.body.channelId,
-					timeStamp: Date.now()
-				}, function (err, result) {
-					if (err) return res.status(400).json(err.message);
-					return res.status(200).json(result);
+				const tokenizer = new natural.WordTokenizer();
+				searchWeb([req.body.video_title]).then((fetchedKeywords) => {
+					dbo.collection("history").insertOne({
+						type: "watchHistory",
+						time: req.body.time,
+						user_id: user_id,
+						video_id: req.body.video_id,
+						artist_name: req.body.artist_name,
+						tags: req.body.tags.split(","),
+						yt_catagory: req.body.yt_catagory,
+						video_title: req.body.video_title,
+						video_keywords: tokenizer.tokenize([req.body.video_title, req.body.video_keywords.split(","), req.body.video_description, req.body.artist_name].join(" ")),
+						language: franc(req.body.video_description, {}) || "en",
+						video_featuring_artists: req.body.video_featuring_artists.split(","),
+						video_description: req.body.video_description,
+						channelId: req.body.channelId,
+						timeStamp: Date.now(),
+						fetched_keywords: fetchedKeywords.results[req.body.video_title]["1"].results
+					}, {})
+						.then(result => res.status(200).json({message: "done"})).catch(e => res.status(500).json(e));
 				});
 			});
 		}).catch(err => {
@@ -345,42 +380,42 @@ router.get("/request/:url", (req, res) => {
 			.catch(e => res.json({message: e.message}));
 	});
 });
-router.get("/backend/videoinfo", (req, res) =>{
+router.get("/backend/videoinfo", (req, res) => {
 	yts({videoId: decodeURI(req.query.id)})
 		.then(video => {
 			res.json({
-			kind: "KabeersMusic#Song",
-			etag: makeid(10),
-			id: video.videoId,
-			channelId: video.author.url.split("/")[4],
-			snippet: {
-				publishedAt: video.ago,
-				title: video.title,
-				description: video.description,
-				channelTitle: video.author.name || "From Kabeers Music",
+				kind: "KabeersMusic#Song",
+				etag: makeid(10),
+				id: video.videoId,
 				channelId: video.author.url.split("/")[4],
-				duration: video.duration,
-				views: video.views,
-				thumbnails: {
-					default: {
-						url: `https://i.ytimg.com/vi/${video.videoId}/default.jpg`,
-						width: 120,
-						height: 90
-					},
-					medium: {
-						url: `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`,
-						width: 320,
-						height: 180
-					},
-					high: {
-						url: `https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`,
-						width: 480,
-						height: 360
+				snippet: {
+					publishedAt: video.ago,
+					title: video.title,
+					description: video.description,
+					channelTitle: video.author.name || "From Kabeers Music",
+					channelId: video.author.url.split("/")[4],
+					duration: video.duration,
+					views: video.views,
+					thumbnails: {
+						default: {
+							url: `https://i.ytimg.com/vi/${video.videoId}/default.jpg`,
+							width: 120,
+							height: 90
+						},
+						medium: {
+							url: `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`,
+							width: 320,
+							height: 180
+						},
+						high: {
+							url: `https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`,
+							width: 480,
+							height: 360
+						}
 					}
 				}
-			}
-		})
-	}).catch(e => res.status(500).json('Failed To Fetch'))
+			});
+		}).catch(e => res.status(500).json("Failed To Fetch"));
 });
 router.get("/backend/search", (req, res) => {
 	yts({query: decodeURI(req.query.q)}).then(value => {

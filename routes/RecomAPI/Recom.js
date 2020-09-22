@@ -17,7 +17,7 @@ const net = new brain.recurrent.LSTM({
 
 //new brain.
 data = data.map((IOobject) => {
-	let inputSplit = IOobject.input.split(' ');
+	let inputSplit = IOobject.input.split(" ");
 	inputSplit = inputSplit.filter((item, pos) => inputSplit.indexOf(item) === pos);
 	//console.log(inputSplit.join())
 	return inputSplit.join();
@@ -26,11 +26,7 @@ data = data.map((IOobject) => {
 }).join();
 
 
-
-
-
-
-console.log('Data', data.split(','));
+console.log("Data", data.split(","));
 
 
 /*
@@ -53,16 +49,16 @@ net.train(data, {
 const mainJs = async (t) => {
 	//net.trainAsync()
 	const index = {};
-	data.split(',').filter((item, pos) => data.split(',').indexOf(item) === pos).map((v, i) => index[v] = i);
+	data.split(",").filter((item, pos) => data.split(",").indexOf(item) === pos).map((v, i) => index[v] = i);
 	return index;
 	let d;
-	if (t === '1') d = [2, 5, 3, 3, 3, 3, 3, 5, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 4, 4, 5, 5, 5, 5, 5, 5, 5, 4, 5, 2, 2, 2, 5, 6, 6, 1];
-	if (t === '1.sorted') d = [2, 5, 3, 3, 3, 3, 3, 5, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 4, 4, 5, 5, 5, 5, 5, 5, 5, 4, 5, 2, 2, 2, 5, 6, 6, 1].sort();
-	if (t === '1') d = [2, 5, 3, 3, 3, 3, 3, 5, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 4, 4, 5, 5, 5, 5, 5, 5, 5, 4, 5, 2, 2, 2, 5, 6, 6, 1].reverse();
+	if (t === "1") d = [2, 5, 3, 3, 3, 3, 3, 5, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 4, 4, 5, 5, 5, 5, 5, 5, 5, 4, 5, 2, 2, 2, 5, 6, 6, 1];
+	if (t === "1.sorted") d = [2, 5, 3, 3, 3, 3, 3, 5, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 4, 4, 5, 5, 5, 5, 5, 5, 5, 4, 5, 2, 2, 2, 5, 6, 6, 1].sort();
+	if (t === "1") d = [2, 5, 3, 3, 3, 3, 3, 5, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 4, 4, 5, 5, 5, 5, 5, 5, 5, 4, 5, 2, 2, 2, 5, 6, 6, 1].reverse();
 
-	if (t === '2') d = [4, 4, 5, 5, 4, 4, 4, 5, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 5, 6, 6, 5, 5, 5];
-	if (t === '2.sort') d = [4, 4, 5, 5, 4, 4, 4, 5, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 5, 6, 6, 5, 5, 5].sort();
-	if (t === '2.rev') d = [4, 4, 5, 5, 4, 4, 4, 5, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 5, 6, 6, 5, 5, 5].reverse();
+	if (t === "2") d = [4, 4, 5, 5, 4, 4, 4, 5, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 5, 6, 6, 5, 5, 5];
+	if (t === "2.sort") d = [4, 4, 5, 5, 4, 4, 4, 5, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 5, 6, 6, 5, 5, 5].sort();
+	if (t === "2.rev") d = [4, 4, 5, 5, 4, 4, 4, 5, 5, 5, 5, 5, 5, 4, 4, 4, 5, 5, 5, 6, 6, 5, 5, 5].reverse();
 
 	const output = net.run(d);
 	return output;
