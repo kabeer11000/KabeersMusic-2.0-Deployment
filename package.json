@@ -17,6 +17,7 @@
     "express": "~4.16.1",
     "express-rate-limit": "^5.1.3",
     "express-session": "^1.17.1",
+    "express-sse": "^0.5.3",
     "franc": "^5.0.0",
     "got": "latest",
     "http-errors": "~1.6.3",
