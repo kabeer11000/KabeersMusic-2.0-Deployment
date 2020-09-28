@@ -13,6 +13,9 @@ const limiter = rateLimit({
 	max: 100 // limit each IP to 100 requests per windowMs TODO Default 10
 });
 const mongo_uri = require("./keys/mongokey");
+var app = express();
+var http = require("http").createServer(app);
+app.io = require("socket.io")(http);
 
 
 var authRouter = require("./routes/AuthRouter");
@@ -20,8 +23,7 @@ var ProxyRouter = require("./routes/ProxyRouter");
 var songsRouter = require("./routes/SongsAPI");
 var recomRouter = require("./routes/RecomAPI/simpleRecom");
 var castEventRouter = require("./routes/RecomAPI/SessionMaintain");
-
-var app = express();
+var clientComSocket = require("./routes/RecomAPI/ClientComSocket")(app.io);
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -50,12 +52,12 @@ app.use("/api", songsRouter);
 app.use("/auth", authRouter);
 app.use("/recom", recomRouter);
 app.use("/cast", castEventRouter);
+app.use("/socket/com", clientComSocket);
 
 app.use(express.static("public/build"));
 app.get(["/home", "/downloads", "/liked", "/history", "/settings", "/search", "/search/results", "/artist", "/charts"], (req, res) => {
 	res.sendFile(path.resolve(__dirname, "public", "build", "index.html"));
 });
-
 /*
 app.use((err, req, res, next) => {
   log.error(err);
