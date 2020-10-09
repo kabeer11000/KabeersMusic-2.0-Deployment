@@ -34,7 +34,7 @@
     "socket.io-p2p-server": "^1.2.0",
     "youtube-search-without-api-key": "^1.0.2",
     "yt-search": "^2.3.1",
-    "ytdl-core": "^3.2.2",
+    "ytdl-core": "^3.3.0",
     "ytpl": "^1.0.1",
     "ytsr": "^1.0.1"
   },
