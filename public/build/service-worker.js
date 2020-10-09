@@ -29,5 +29,5 @@ workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
 workbox.routing.registerNavigationRoute("./index.html", {
-  blacklist: [/^\/auth/,/^\/api/]
+  blacklist: [/^\/auth/,/^\/api/,/^\/static/]
 });
