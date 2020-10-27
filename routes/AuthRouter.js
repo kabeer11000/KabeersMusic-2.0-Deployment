@@ -10,11 +10,12 @@ const mongoClient = MongoClient.connect(mongo_uri, {
 	useUnifiedTopology: true
 }).then(db => db.db("music"));
 //const currentURL = "http://localhost:9000/";
-//const currentURL = "https://kabeersmusic.herokuapp.com/";
-const currentURL = "https://music.kabeersnetwork.tk/";
+const currentURL = "https://kabeersmusic.herokuapp.com/";
+//const currentURL = "https://music.kabeersnetwork.tk/";
 const endPoints = {
 	callbackURL: `${currentURL}/auth/callback`,
 	callbackURLFAKE: "http://localhost:9000/auth/callback",
+	OIDCHost: `kabeers-auth.herokuapp.com`
 };
 
 function serialize(object) {
@@ -38,7 +39,7 @@ router.get("/callback", function (req, res, next) {
 
 	axios({
 		method: "post",
-		url: "https://accounts.kabeersnetwork.tk/auth/token?modern=true",
+		url: `https://${endPoints.OIDCHost}/auth/token?modern=true`,
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded"
 		},
@@ -87,14 +88,12 @@ router.get("/redirect", (req, res) => {
 	};
 	const id = makeid(10);
 	req.session.state = id;
-	const authUrl = `https://accounts.kabeersnetwork.tk/auth/authorize?client_id=${info.clientId}&scope=${info.scopes}&response_type=code&redirect_uri=${info.callback}&state=${id}&nonce=${makeid(5)}&prompt=none`;
+	const authUrl = `https://${endPoints.OIDCHost}/auth/authorize?client_id=${info.clientId}&scope=${info.scopes}&response_type=code&redirect_uri=${info.callback}&state=${id}&nonce=${makeid(5)}&prompt=none`;
 	res.redirect(authUrl);
 });
 router.get("/user/data", (req, res) => {
 	const token = req.headers["idtoken"];
-	axios.post("https://accounts.kabeersnetwork.tk/user/userinfo", serialize({
-		client_secret: "pojsd682jxp31accE3mHsMtBRGVtIk0AmTV0jU3g",
-		client_public: "S565ds6887df646k5Y4f56IOiDWxRXS840lnnmD",
+	axios.post(`https://${endPoints.OIDCHost}/user/userinfo`, serialize({
 		token: token
 	}), {
 		headers: {
@@ -111,7 +110,7 @@ router.get("/store/tokens/refresh", (req, res) => {
 	if ($jwt_payload.iat > $jwt_payload.exp) return res.json("Refresh Token Expired");
 	axios({
 		method: "post",
-		url: "https://accounts.kabeersnetwork.tk/auth/refresh",
+		url: `https://${endPoints.OIDCHost}/auth/refresh`,
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded"
 		},
