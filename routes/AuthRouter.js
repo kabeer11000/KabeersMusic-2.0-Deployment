@@ -10,7 +10,7 @@ const mongoClient = MongoClient.connect(mongo_uri, {
 	useUnifiedTopology: true
 }).then(db => db.db("music"));
 //const currentURL = "http://localhost:9000/";
-const currentURL = "https://kabeersmusic.herokuapp.com/";
+const currentURL = "https://kabeersmusic.herokuapp.com";
 //const currentURL = "https://music.kabeersnetwork.tk/";
 const endPoints = {
 	callbackURL: `${currentURL}/auth/callback`,
