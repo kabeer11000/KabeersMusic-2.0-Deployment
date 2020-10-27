@@ -27,12 +27,11 @@ var tokenizer = new natural.WordTokenizer();
 Array.prototype.last = () => this[this.length - 1];
 const aut = 400;
 
-function YouTubeGetID(e) {
-	return void 0 !== (e = e.replace(/(>|<)/gi, "").split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/))[2] ? e[2].split(/[^0-9a-z_\-]/i)[0] : e;
-}
+const YouTubeGetID = (e) => void 0 !== (e = e.replace(/(>|<)/gi, "").split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/))[2] ? e[2].split(/[^0-9a-z_\-]/i)[0] : e;
 
 //const currentURL = "http://localhost:9000/";
-const currentURL = "https://kabeersmusic.herokuapp.com/";
+//const currentURL = "https://kabeersmusic.herokuapp.com/";
+const currentURL = "https://music.kabeersnetwork.tk/";
 const youtube_key = "AIzaSyAJkG5coTOfjTRgpYRvCUq0C0V0WFc7tZU";
 /*
 const endPoints = {
@@ -63,7 +62,7 @@ const generateRandomHeadline = (name) => {
 	return templates[Math.floor(Math.random() * (+templates.length - +0)) + +0];
 };
 const pickRandom = (arr, count) => {
-	let _arr = [...arr];
+	const _arr = [...arr];
 	return [...Array(count)].map(() => _arr.splice(Math.floor(Math.random() * _arr.length), 1)[0]);
 };
 
@@ -124,6 +123,7 @@ router.get("/search", (req, res) => {
 	});
 });
 router.get("/feed55", async (req, res) => {
+	if (process.env.NODE_ENV !== "development") return res.json("Route Not Valid");
 	if (!req.headers.authorization) return res.status(402).json("Bad Request");
 	jwt.verify(req.headers.authorization.split(" ")[1], "d546fd8RiOe5kf4tiNTv1S4VGhCA", {}, function (err, decoded) {
 		if (err || !decoded) return res.status(400).json(err);
@@ -196,6 +196,21 @@ router.get("/feed55", async (req, res) => {
 				}
 			});
 	});
+});
+router.get("/feed/exp/yt", (req, res) => {
+	if (process.env.NODE_ENV !== "development") return res.json("Route Not Valid");
+	MongoClient.connect(mongo_uri, {useNewUrlParser: true, useUnifiedTopology: true})
+		.then(async (db) => {
+			const user_id = "b4000376114184b38e2f00e43b070a9fe239457d";
+			console.log("Request Recieved");
+			const searchHisoryResults = await db.db("music").collection("history").find({
+				user_id: user_id,
+				type: "searchHistory"
+			}).limit(10).sort({_id: 1}).toArray().then((videoIds) => !videoIds ? [] : axios.get(endPoints.searchYoutube(videoIds.map(v => v.query))).then(v => v.data).catch(e => res.json(e))).catch(e => res.json(e));
+			res.json(searchHisoryResults);
+			const getArtists = null;
+			const getByListeningHistory = null;
+		}).catch(e => res.status(400).json(e));
 });
 const getMaximum = (e) => {
 	let t, n = 1, l = 0;
